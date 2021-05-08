@@ -13,13 +13,13 @@ USER root
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1sg.\2/" /etc/apt/sources.list
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ Asia/Singapore
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends sudo curl tzdata
+RUN apt update
+RUN apt install -y --no-install-recommends sudo curl tzdata
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && sudo dpkg-reconfigure -f noninteractive tzdata
 
 ## UI Support
 # Enable Vulkan support
-RUN sudo apt-get install -y --no-install-recommends libvulkan1 && \
+RUN sudo apt install -y --no-install-recommends libvulkan1 && \
 	VULKAN_API_VERSION=`dpkg -s libvulkan1 | grep -oP 'Version: [0-9|\.]+' | grep -oP '[0-9|\.]+'` && \
 	mkdir -p /etc/vulkan/icd.d/ && \
 	echo \
@@ -32,7 +32,7 @@ RUN sudo apt-get install -y --no-install-recommends libvulkan1 && \
 	}" > /etc/vulkan/icd.d/nvidia_icd.json
 
 # Enable X11 support (including the libraries required by CEF) and xvfb so we can create a dummy display if needed
-RUN sudo apt-get install -y --no-install-recommends \
+RUN sudo apt install -y --no-install-recommends \
 	libasound2 \
 	libatk1.0-0 \
 	libcairo2 \
@@ -57,21 +57,21 @@ RUN sudo apt-get install -y --no-install-recommends \
 	xkb-data \
 	xvfb
 
-# ## User Setup
-# # Add a user with the same user_id as the user outside the container
-# # Requires a docker build argument `user_id`
-# ARG USERID=1000
-# ARG GROUPID=1000
+## User Setup
+# Add a user with the same user_id as the user outside the container
+# Requires a docker build argument `user_id`
+ARG USERID=1000
+ARG GROUPID=1000
 # ENV USERNAME ue4
-# RUN groupadd -g $GROUPID -o $USERNAME
-# RUN useradd -m --uid $USERID --gid $GROUPID -o -s /bin/bash $USERNAME \
-# RUN echo "$USERNAME:$USERNAME" | chpasswd \
-# && adduser $USERNAME sudo \
-# && echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
-# WORKDIR /home/$USERNAME
-# RUN sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
-# USER $USERNAME
-# CMD /bin/bash
+RUN groupadd -g $GROUPID -o $USERNAME
+RUN useradd -m --uid $USERID --gid $GROUPID -o -s /bin/bash $USERNAME \
+RUN echo "$USERNAME:$USERNAME" | chpasswd \
+&& adduser $USERNAME sudo \
+&& echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
+WORKDIR /home/$USERNAME
+RUN sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
+USER $USERNAME
+CMD /bin/bash
 
 # # Enable PulseAudio support
 # RUN sudo apt-get install pulseaudio-utils -y --no-install-recommends
@@ -80,16 +80,17 @@ RUN sudo apt-get install -y --no-install-recommends \
 ## ROS Installation
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
-RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
-RUN sudo apt-get install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
-RUN sudo apt-get install curl gnupg2 libpcap-dev libcgal-dev libcgal-demo libeigen3-dev openssh-server -y --no-install-recommends
+# RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
+RUN sudo apt update && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
+RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
+RUN sudo apt install curl gnupg2 libpcap-dev libcgal-dev libcgal-demo libeigen3-dev openssh-server -y --no-install-recommends
 
 # ## AirSim Installation
 # RUN sudo apt-get install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs pulseaudio -y --no-install-recommends
 # RUN sudo apt-get install build-essential cmake cppcheck gdb git vim wget tmux less htop python python-pip python-tk -y --no-install-recommends
 
 # Cleanup
-RUN sudo apt-get clean autoremove
+RUN sudo apt clean autoremove
 
 # ## Python
 # RUN pip3 install setuptools wheel --no-cache-dir
