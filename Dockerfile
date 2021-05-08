@@ -57,21 +57,21 @@ RUN sudo apt install -y --no-install-recommends \
 	xkb-data \
 	xvfb
 
-## User Setup
-# Add a user with the same user_id as the user outside the container
-# Requires a docker build argument `user_id`
-ARG USERID=1000
-ARG GROUPID=1000
-# ENV USERNAME ue4
-RUN groupadd -g $GROUPID -o $USERNAME
-RUN useradd -m --uid $USERID --gid $GROUPID -o -s /bin/bash $USERNAME \
-RUN echo "$USERNAME:$USERNAME" | chpasswd \
-&& adduser $USERNAME sudo \
-&& echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
-WORKDIR /home/$USERNAME
-RUN sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
-USER $USERNAME
-CMD /bin/bash
+# ## User Setup
+# # Add a user with the same user_id as the user outside the container
+# # Requires a docker build argument `user_id`
+# ARG USERID=1000
+# ARG GROUPID=1000
+# # ENV USERNAME ue4
+# RUN groupadd -g $GROUPID -o $USERNAME
+# RUN useradd -m --uid $USERID --gid $GROUPID -o -s /bin/bash $USERNAME \
+# RUN echo "$USERNAME:$USERNAME" | chpasswd \
+# && adduser $USERNAME sudo \
+# && echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
+# WORKDIR /home/$USERNAME
+# RUN sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
+# USER $USERNAME
+# CMD /bin/bash
 
 # # Enable PulseAudio support
 # RUN sudo apt-get install pulseaudio-utils -y --no-install-recommends
@@ -128,7 +128,7 @@ WORKDIR /$FOLDER_NAME
 
 RUN git clone -b 4.25 https://theairlab:airlab123@github.com/EpicGames/UnrealEngine.git
 WORKDIR UnrealEngine
-RUN sudo chown -R $USERNAME /home/$USERNAME
+# RUN sudo chown -R $USERNAME /home/$USERNAME
 # RUN sudo chown -R $USERNAME /$FOLDER_NAME
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
