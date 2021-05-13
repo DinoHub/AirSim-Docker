@@ -2,8 +2,6 @@
 # xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/data/projects/cinematography:/workspace/volume" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4
 # docker commit <CONTAINER_ID> ue4:latest after first run of ue to prevent long ue init each time from recompiling shader maps
 
-# FROM osrf/ros:melodic-desktop-full
-# FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
 
