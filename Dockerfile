@@ -54,37 +54,37 @@ RUN sudo apt update && sudo apt install ros-melodic-desktop-full  -y --no-instal
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
 
 
-## AirSim Installation Dependencies (TODO: necessary?)
-# # RUN sudo apt-get install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs pulseaudio -y --no-install-recommends
-# RUN sudo apt install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs -y --no-install-recommends
-# RUN sudo apt install build-essential cmake cppcheck gdb git vim wget tmux less htop python python-pip python-tk -y --no-install-recommends
+# ## AirSim Installation Dependencies (TODO: necessary?)
+# # # RUN sudo apt-get install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs pulseaudio -y --no-install-recommends
+# # RUN sudo apt install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs -y --no-install-recommends
+# # RUN sudo apt install build-essential cmake cppcheck gdb git vim wget tmux less htop python python-pip python-tk -y --no-install-recommends
 
 # Cleanup
 RUN sudo apt clean autoremove
 
-# ## Python (TODO: necessary?)
-# RUN pip3 install setuptools wheel --no-cache-dir
-# RUN pip3 install 'ue4cli>=0.0.41' 'conan-ue4cli>=0.0.21' ue4-ci-helpers --no-cache-dir
-# RUN pip3 install msgpack-rpc-python numpy airsim --no-cache-dir
-# RUN pip install colored-traceback catkin_tools msgpack-rpc-python torch future --no-cache-dir
+# # ## Python (TODO: necessary?)
+# # RUN pip3 install setuptools wheel --no-cache-dir
+# # RUN pip3 install 'ue4cli>=0.0.41' 'conan-ue4cli>=0.0.21' ue4-ci-helpers --no-cache-dir
+# # RUN pip3 install msgpack-rpc-python numpy airsim --no-cache-dir
+# # RUN pip install colored-traceback catkin_tools msgpack-rpc-python torch future --no-cache-dir
 
 
-## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
-# ( https://microsoft.github.io/AirSim/build_linux/)
-WORKDIR UnrealEngine
-RUN sudo chown -R $USERNAME /home/$USERNAME
-# RUN sudo chown -R $USERNAME /$FOLDER_NAME
-RUN ./Setup.sh
-RUN ./GenerateProjectFiles.sh
-USER $USERNAME
-RUN make
-WORKDIR /$FOLDER_NAME
+# ## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
+# # ( https://microsoft.github.io/AirSim/build_linux/)
+# WORKDIR UnrealEngine
+# RUN sudo chown -R $USERNAME /home/$USERNAME
+# # RUN sudo chown -R $USERNAME /$FOLDER_NAME
+# RUN ./Setup.sh
+# RUN ./GenerateProjectFiles.sh
+# USER $USERNAME
+# RUN make
+# WORKDIR /$FOLDER_NAME
 
-## AirSim Setup (https://microsoft.github.io/AirSim/build_linux/)
-WORKDIR airsim
-RUN ./setup.sh
-RUN ./build.sh
-# use ./build.sh --debug to build in debug mode
+# ## AirSim Setup (https://microsoft.github.io/AirSim/build_linux/)
+# WORKDIR airsim
+# RUN ./setup.sh
+# RUN ./build.sh
+# # use ./build.sh --debug to build in debug mode
 
 
 # ## UI Support
