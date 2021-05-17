@@ -1,5 +1,5 @@
 # docker build -t ue4:4.18 .
-# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/data/projects/cinematography:/workspace/volume" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4
+# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/forest:/workspace/volume" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4
 # docker commit <CONTAINER_ID> ue4:latest after first run of ue to prevent long ue init each time from recompiling shader maps
 
 # FROM osrf/ros:melodic-desktop-full
@@ -130,6 +130,13 @@ RUN ./build.sh
 # use ./build.sh --debug to build in debug mode
 
 
+## Mapping Code (https://github.com/Amigoshan/tartanair.git)
+WORKDIR /$FOLDER_NAME
+RUN mkdir -p src
+WORKDIR src
+RUN git clone https://github.com/Amigoshan/tartanair.git .
+RUN source /opt/ros/melodic/setup.bash && catkin_make
+RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
 
 
 # # Enable PulseAudio support
@@ -138,6 +145,8 @@ RUN ./build.sh
 
 
 ### Copy Files into Docker
+
+## Copy Unreal Project
 
 
 # ## `filming_meta` README Setup
