@@ -17,6 +17,47 @@ RUN apt update
 RUN apt install -y --no-install-recommends sudo curl tzdata
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && sudo dpkg-reconfigure -f noninteractive tzdata
 
+## UI Support
+# Enable Vulkan support
+RUN sudo apt install -y --no-install-recommends libvulkan1 && \
+	VULKAN_API_VERSION=`dpkg -s libvulkan1 | grep -oP 'Version: [0-9|\.]+' | grep -oP '[0-9|\.]+'` && \
+	mkdir -p /etc/vulkan/icd.d/ && \
+	echo \
+	"{\
+		\"file_format_version\" : \"1.0.0\",\
+		\"ICD\": {\
+			\"library_path\": \"libGLX_nvidia.so.0\",\
+			\"api_version\" : \"${VULKAN_API_VERSION}\"\
+		}\
+	}" > /etc/vulkan/icd.d/nvidia_icd.json
+
+# Enable X11 support (including the libraries required by CEF) and xvfb so we can create a dummy display if needed
+RUN sudo apt install -y --no-install-recommends \
+	libasound2 \
+	libatk1.0-0 \
+	libcairo2 \
+	libfontconfig1 \
+	libfreetype6 \
+	libglu1 \
+	libnss3 \
+	libnspr4 \
+	libpango-1.0-0 \
+	libpangocairo-1.0-0 \
+	libsm6 \
+	libxcomposite1 \
+	libxcursor1 \
+	libxi6 \
+	libxrandr2 \
+	libxrender1 \
+	libxss1 \
+	libxv1 \
+	x11-xkb-utils \
+	xauth \
+	xfonts-base \
+	xkb-data \
+	xvfb
+
+
 ## User Setup
 # Add a user with the same user_id as the user outside the container
 # Requires a docker build argument `USERID` >> docker build --build-arg USERID=youruserid
@@ -41,6 +82,8 @@ RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6
 # Unreal Engine
 ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
+RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
+
 RUN git clone -b 4.25 https://theairlab:airlab123@github.com/EpicGames/UnrealEngine.git
 
 # AirSim
@@ -69,63 +112,24 @@ RUN sudo apt clean autoremove
 # # RUN pip install colored-traceback catkin_tools msgpack-rpc-python torch future --no-cache-dir
 
 
-# ## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
-# # ( https://microsoft.github.io/AirSim/build_linux/)
-# WORKDIR UnrealEngine
-# RUN sudo chown -R $USERNAME /home/$USERNAME
-# # RUN sudo chown -R $USERNAME /$FOLDER_NAME
-# RUN ./Setup.sh
-# RUN ./GenerateProjectFiles.sh
-# USER $USERNAME
-# RUN make
-# WORKDIR /$FOLDER_NAME
+## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
+# ( https://microsoft.github.io/AirSim/build_linux/)
+WORKDIR UnrealEngine
+RUN sudo chown -R $USERNAME /home/$USERNAME
+# RUN sudo chown -R $USERNAME /$FOLDER_NAME
+RUN ./Setup.sh
+RUN ./GenerateProjectFiles.sh
+USER $USERNAME
+RUN make
+WORKDIR /$FOLDER_NAME
 
-# ## AirSim Setup (https://microsoft.github.io/AirSim/build_linux/)
-# WORKDIR airsim
-# RUN ./setup.sh
-# RUN ./build.sh
-# # use ./build.sh --debug to build in debug mode
+## AirSim Setup (https://microsoft.github.io/AirSim/build_linux/)
+WORKDIR AirSim
+RUN ./setup.sh
+RUN ./build.sh
+# use ./build.sh --debug to build in debug mode
 
 
-# ## UI Support
-# # Enable Vulkan support
-# RUN sudo apt install -y --no-install-recommends libvulkan1 && \
-# 	VULKAN_API_VERSION=`dpkg -s libvulkan1 | grep -oP 'Version: [0-9|\.]+' | grep -oP '[0-9|\.]+'` && \
-# 	mkdir -p /etc/vulkan/icd.d/ && \
-# 	echo \
-# 	"{\
-# 		\"file_format_version\" : \"1.0.0\",\
-# 		\"ICD\": {\
-# 			\"library_path\": \"libGLX_nvidia.so.0\",\
-# 			\"api_version\" : \"${VULKAN_API_VERSION}\"\
-# 		}\
-# 	}" > /etc/vulkan/icd.d/nvidia_icd.json
-
-# # Enable X11 support (including the libraries required by CEF) and xvfb so we can create a dummy display if needed
-# RUN sudo apt install -y --no-install-recommends \
-# 	libasound2 \
-# 	libatk1.0-0 \
-# 	libcairo2 \
-# 	libfontconfig1 \
-# 	libfreetype6 \
-# 	libglu1 \
-# 	libnss3 \
-# 	libnspr4 \
-# 	libpango-1.0-0 \
-# 	libpangocairo-1.0-0 \
-# 	libsm6 \
-# 	libxcomposite1 \
-# 	libxcursor1 \
-# 	libxi6 \
-# 	libxrandr2 \
-# 	libxrender1 \
-# 	libxss1 \
-# 	libxv1 \
-# 	x11-xkb-utils \
-# 	xauth \
-# 	xfonts-base \
-# 	xkb-data \
-# 	xvfb
 
 
 # # Enable PulseAudio support
