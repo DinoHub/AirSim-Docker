@@ -91,8 +91,9 @@ RUN git clone https://github.com/Microsoft/AirSim.git
 
 
 ## ROS Installation
+WORKDIR /home/$USERNAME
 # RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
-RUN sudo apt update && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
+RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
 # dependencies from Wenshan Doc
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
 
@@ -111,11 +112,10 @@ RUN sudo apt clean autoremove
 # # RUN pip3 install msgpack-rpc-python numpy airsim --no-cache-dir
 # # RUN pip install colored-traceback catkin_tools msgpack-rpc-python torch future --no-cache-dir
 
-
+RUN sudo chown -R $USERNAME /home/$USERNAME
 ## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
 # ( https://microsoft.github.io/AirSim/build_linux/)
 WORKDIR UnrealEngine
-RUN sudo chown -R $USERNAME /home/$USERNAME
 # RUN sudo chown -R $USERNAME /$FOLDER_NAME
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
@@ -131,13 +131,16 @@ RUN ./build.sh
 
 
 ## Mapping Code (https://github.com/Amigoshan/tartanair.git)
+ARG WORKSPACE=catkin_ws
 WORKDIR /$FOLDER_NAME
-RUN mkdir -p src
+RUN mkdir -p $WORKSPACE/src
 WORKDIR src
-RUN git clone https://github.com/Amigoshan/tartanair.git .
+# RUN git clone https://github.com/Amigoshan/tartanair.git . (doesn't work)
+COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
+WORKDIR $WORKSPACE
 RUN source /opt/ros/melodic/setup.bash && catkin_make
 RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
-
+RUN catkin_make
 
 # # Enable PulseAudio support
 # RUN sudo apt install pulseaudio-utils -y --no-install-recommends
@@ -178,13 +181,13 @@ RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
 
 
 
-# ## HW Accelerate
-# # run xhost +local:docker on your host machine if any issues opening UI
-# # test with cmd: roscore & rosrun rviz rviz
-# # enable NVIDIA Container Toolkit (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#dockerfiles)
-# ENV NVIDIA_VISIBLE_DEVICES \
-#     ${NVIDIA_VISIBLE_DEVICES:-all}
-# ENV NVIDIA_DRIVER_CAPABILITIES all
-# # ENV SDL_VIDEODRIVER=offscreen
-# ENV SDL_HINT_CUDA_DEVICE=0
-# ENV QT_X11_NO_MITSHM=1
+## HW Accelerate
+# run xhost +local:docker on your host machine if any issues opening UI
+# test with cmd: roscore & rosrun rviz rviz
+# enable NVIDIA Container Toolkit (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#dockerfiles)
+ENV NVIDIA_VISIBLE_DEVICES \
+    ${NVIDIA_VISIBLE_DEVICES:-all}
+ENV NVIDIA_DRIVER_CAPABILITIES all
+# ENV SDL_VIDEODRIVER=offscreen
+ENV SDL_HINT_CUDA_DEVICE=0
+ENV QT_X11_NO_MITSHM=1
