@@ -2,8 +2,6 @@
 # xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/forest:/workspace/volume" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4
 # docker commit <CONTAINER_ID> ue4:latest after first run of ue to prevent long ue init each time from recompiling shader maps
 
-# FROM osrf/ros:melodic-desktop-full
-# FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
 
@@ -92,10 +90,14 @@ RUN git clone https://github.com/Microsoft/AirSim.git
 
 ## ROS Installation
 WORKDIR /home/$USERNAME
+# RUN cat /etc/lsb-release
 # RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
 RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
 # dependencies from Wenshan Doc
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
+# # dependencies for building packages (TODO: necessary?)
+RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
+# RUN sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential -y --no-install recommends
 
 
 # ## AirSim Installation Dependencies (TODO: necessary?)
@@ -115,7 +117,7 @@ RUN sudo apt clean autoremove
 RUN sudo chown -R $USERNAME /home/$USERNAME
 ## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
 # ( https://microsoft.github.io/AirSim/build_linux/)
-WORKDIR UnrealEngine
+WORKDIR /$FOLDER_NAME/UnrealEngine
 # RUN sudo chown -R $USERNAME /$FOLDER_NAME
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
@@ -132,13 +134,11 @@ RUN ./build.sh
 
 ## Mapping Code (https://github.com/Amigoshan/tartanair.git)
 ARG WORKSPACE=catkin_ws
-WORKDIR /$FOLDER_NAME
-RUN mkdir -p $WORKSPACE/src
-WORKDIR src
+WORKDIR /$FOLDER_NAME/$WORKSPACE/src
 # RUN git clone https://github.com/Amigoshan/tartanair.git . (doesn't work)
 COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
-WORKDIR $WORKSPACE
-RUN source /opt/ros/melodic/setup.bash && catkin_make
+WORKDIR /$FOLDER_NAME/$WORKSPACE
+RUN source /opt/ros/melodic/setup.bash
 RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
 RUN catkin_make
 
