@@ -92,7 +92,8 @@ RUN git clone https://github.com/Microsoft/AirSim.git
 WORKDIR /home/$USERNAME
 # RUN cat /etc/lsb-release
 # RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
-RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
+# RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
+RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
 # dependencies from Wenshan Doc
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
 # # dependencies for building packages (TODO: necessary?)
@@ -140,7 +141,9 @@ COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
 WORKDIR /$FOLDER_NAME/$WORKSPACE
 RUN source /opt/ros/melodic/setup.bash
 RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
-RUN catkin_make
+
+RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
+RUN catkin build
 
 # # Enable PulseAudio support
 # RUN sudo apt install pulseaudio-utils -y --no-install-recommends
