@@ -135,15 +135,29 @@ RUN ./build.sh
 
 ## Mapping Code (https://github.com/Amigoshan/tartanair.git)
 ARG WORKSPACE=catkin_ws
-WORKDIR /$FOLDER_NAME/$WORKSPACE/src
-# RUN git clone https://github.com/Amigoshan/tartanair.git . (doesn't work)
-COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
 WORKDIR /$FOLDER_NAME/$WORKSPACE
-RUN source /opt/ros/melodic/setup.bash
-RUN echo $ROS_PACKAGE_PATH /$FOLDER_NAME/src:/opt/ros/melodic/share
-
 RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
-RUN catkin build
+WORKDIR src
+COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
+
+# (Git clone doesn't work somehow)
+# RUN git clone https://theairlab:airlab123@github.com/Amigoshan/tartanair.git
+# RUN mv tartainair src
+
+WORKDIR /$FOLDER_NAME/$WORKSPACE
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+RUN source /opt/ros/melodic/setup.bash \
+&& sudo -E catkin build data_type \
+&& sudo -E catkin build expo_base \
+&& sudo -E catkin build frontier_base \
+&& sudo -E catkin build octomap_mapping \
+&& sudo -E catkin build ompl \
+&& sudo -E catkin build planner_base \
+&& sudo -E catkin build roadmap_generator \
+&& sudo -E catkin build sample_pipeline
+# data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
+
+# RUN catkin build
 
 # # Enable PulseAudio support
 # RUN sudo apt install pulseaudio-utils -y --no-install-recommends
