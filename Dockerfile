@@ -97,7 +97,7 @@ RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-mel
 # dependencies from Wenshan Doc
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
 # # dependencies for building packages (TODO: necessary?)
-RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
+RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools catkin_tools msgpack-rpc-python -y --no-install-recommends
 # RUN sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential -y --no-install recommends
 
 
@@ -157,18 +157,24 @@ RUN source /opt/ros/melodic/setup.bash \
 && sudo -E catkin build sample_pipeline
 # data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
 
-# RUN catkin build
-
 # # Enable PulseAudio support
 # RUN sudo apt install pulseaudio-utils -y --no-install-recommends
 # COPY --chown=$USERNAME:$USERNAME pulseaudio-client.conf /etc/pulse/client.conf
 
 
-### Copy Files into Docker
+### Setup Unreal Project
+## Copy Unreal Project with AirSim plugin from host into container
+## Refer to https://microsoft.github.io/AirSim/unreal_custenv/ for steps to setup AirSim Unreal Project using Windows machine (cannot be done in Linux for custom env)
+# Name Unreal Project as tartantest/ on host
+WORKDIR unrealproj
+COPY ./tartantest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
 
-## Copy Unreal Project
+## Alternatively, see last FAQ of https://microsoft.github.io/AirSim/unreal_custenv/
+## Copy Unreal/Plugins/ from /$FOLDER_NAME/AirSim/ to /$FOLDER_NAME/$WORKSPACE/unrealproj
+## Then edit the .uproject file to enable AirSim
 
 
+## OUTDATED: for cinematography code
 # ## `filming_meta` README Setup
 # WORKDIR /$FOLDER_NAME
 # RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
