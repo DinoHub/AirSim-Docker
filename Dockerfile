@@ -95,9 +95,9 @@ WORKDIR /home/$USERNAME
 # RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
 RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
 # dependencies from Wenshan Doc
-RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server
+RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d
 # # dependencies for building packages (TODO: necessary?)
-RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools catkin_tools msgpack-rpc-python -y --no-install-recommends
+RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
 # RUN sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential -y --no-install recommends
 
 
@@ -147,14 +147,7 @@ COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
 WORKDIR /$FOLDER_NAME/$WORKSPACE
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 RUN source /opt/ros/melodic/setup.bash \
-&& sudo -E catkin build data_type \
-&& sudo -E catkin build expo_base \
-&& sudo -E catkin build frontier_base \
-&& sudo -E catkin build octomap_mapping \
-&& sudo -E catkin build ompl \
-&& sudo -E catkin build planner_base \
-&& sudo -E catkin build roadmap_generator \
-&& sudo -E catkin build sample_pipeline
+&& sudo -E catkin build
 # data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
 
 # # Enable PulseAudio support
@@ -165,9 +158,9 @@ RUN source /opt/ros/melodic/setup.bash \
 ### Setup Unreal Project
 ## Copy Unreal Project with AirSim plugin from host into container
 ## Refer to https://microsoft.github.io/AirSim/unreal_custenv/ for steps to setup AirSim Unreal Project using Windows machine (cannot be done in Linux for custom env)
-# Name Unreal Project as tartantest/ on host
+# Name Unreal Project as TartanTest/ on host
 WORKDIR unrealproj
-COPY ./tartantest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
+COPY ./TartanTest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
 
 ## Alternatively, see last FAQ of https://microsoft.github.io/AirSim/unreal_custenv/
 ## Copy Unreal/Plugins/ from /$FOLDER_NAME/AirSim/ to /$FOLDER_NAME/$WORKSPACE/unrealproj
