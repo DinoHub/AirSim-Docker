@@ -1,5 +1,5 @@
-# docker build -t ue4:4.18 .
-# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/forest:/workspace/volume" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4
+# docker build -t ue4:Tartan .
+# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4:Tartan
 # docker commit <CONTAINER_ID> ue4:latest after first run of ue to prevent long ue init each time from recompiling shader maps
 
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
@@ -90,7 +90,6 @@ RUN git clone https://github.com/Microsoft/AirSim.git
 
 ## ROS Installation
 WORKDIR /home/$USERNAME
-# RUN cat /etc/lsb-release
 # RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
 # RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
 RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
@@ -159,15 +158,16 @@ RUN source /opt/ros/melodic/setup.bash \
 ## Copy Unreal Project with AirSim plugin from host into container
 ## Refer to https://microsoft.github.io/AirSim/unreal_custenv/ for steps to setup AirSim Unreal Project using Windows machine (cannot be done in Linux for custom env)
 # Name Unreal Project as TartanTest/ on host
-WORKDIR unrealproj
-COPY ./TartanTest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
+# WORKDIR unrealproj
+# COPY ./TartanTest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
+## Above not necessary. Use docker run arguments to mount Unreal Project from host into container.
 
 ## Alternatively, see last FAQ of https://microsoft.github.io/AirSim/unreal_custenv/
 ## Copy Unreal/Plugins/ from /$FOLDER_NAME/AirSim/ to /$FOLDER_NAME/$WORKSPACE/unrealproj
 ## Then edit the .uproject file to enable AirSim
 
 
-## OUTDATED: for cinematography code
+## OUTDATED: for cinematography code ##
 # ## `filming_meta` README Setup
 # WORKDIR /$FOLDER_NAME
 # RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
@@ -189,12 +189,11 @@ COPY ./TartanTest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
 # WORKDIR src/filming_kf
 # RUN pip install --user .
 
-
 # # Copy Unreal Environments (Forest, Gascola ...)
 # # https://cmu.box.com/s/ewia8tusjc9iqxnc5iimr7wuug9gvs3h (Would you like to use car simulation? Choose no to use quadrotor simulation. Error at startup: VehicleSetting for vehicle name BP_FlyingPawn_2413 was requested but not found)
 # # https://cmu.box.com/s/lknouwj7w9fhfnxcj3taqe3su0ns28ww (Unable to read project status.)
 # # COPY --chown=$USERNAME environment /$FOLDER_NAME/environment
-
+## End of cinematography ##
 
 
 ## HW Accelerate
@@ -207,3 +206,7 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 # ENV SDL_VIDEODRIVER=offscreen
 ENV SDL_HINT_CUDA_DEVICE=0
 ENV QT_X11_NO_MITSHM=1
+
+
+## Set working directory for container
+WORKDIR /$FOLDER_NAME/UnrealEngine
