@@ -3,6 +3,10 @@
 # $ ./UnrealEngine/Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
 # "Would you like to rebuild AirSim?" >> Yes
 # docker commit <CONTAINER_ID> ue4:Tartan after first run of ue to prevent long ue init each time from recompiling shader maps
+## Open another bash
+# docker exec -it <CONTAINER_NAME> bash
+## Open another bash with display
+# xhost +local:docker && docker exec -it -e "DISPLAY=${DISPLAY}" <CONTAINER_NAME> bash
 
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
@@ -157,7 +161,10 @@ RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
 
 ## Mapping Dependencies
 RUN sudo apt update && sudo apt install python-tk python-numba -y --no-install-recommends
-RUN pip install msgpack-rpc-python pyquaternion
+RUN pip install msgpack-rpc-python pyquaternion scipy
+
+## Create directory to store maps
+WORKDIR /$FOLDER_NAME/maps/OccMap
 
 
 # # Enable PulseAudio support
@@ -177,32 +184,9 @@ RUN pip install msgpack-rpc-python pyquaternion
 ## Copy Unreal/Plugins/ from /$FOLDER_NAME/AirSim/ to /$FOLDER_NAME/$WORKSPACE/unrealproj
 ## Then edit the .uproject file to enable AirSim
 
-
-## OUTDATED: for cinematography code ##
-# ## `filming_meta` README Setup
-# WORKDIR /$FOLDER_NAME
-# RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
-# #Assuming wstool init src src/filming_meta/main.rosinstall has been done on your host due to bitbucket permissions
-# COPY --chown=$USERNAME:$USERNAME src /$FOLDER_NAME/src
-
-# RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-# RUN echo "alias c='catkin build --this'" >> ~/.bashrc
-# RUN echo "alias s='source ~/.bashrc'" >> ~/.bashrc
-# RUN echo "alias ue='/$FOLDER_NAME/UnrealEngine/Engine/Binaries/Linux/UE4Editor'" >> ~/.bashrc
-# RUN echo "alias takeoff='rosservice call /sm/takeoffSrv'" >> ~/.bashrc
-
-# WORKDIR src/dji_osdk/build
-# RUN sudo cmake ..
-# RUN sudo make install
-# WORKDIR /$FOLDER_NAME
-# RUN source /opt/ros/melodic/setup.bash && sudo -E catkin build -j8
-# RUN echo "source /workspace/devel/setup.bash" >> ~/.bashrc
-# WORKDIR src/filming_kf
-# RUN pip install --user .
-
 ### Install Others
 ## Text Editor
-# sudo apt install gedit
+RUN sudo apt update && sudo apt install gedit
 
 ## HW Accelerate
 # run xhost +local:docker on your host machine if any issues opening UI
