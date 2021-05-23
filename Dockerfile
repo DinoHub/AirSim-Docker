@@ -1,6 +1,6 @@
 # docker build -t ue4:Tartan .
 # xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4:Tartan
-# $ ./Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
+# $ ./UnrealEngine/Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
 # "Would you like to rebuild AirSim?" >> Yes
 # docker commit <CONTAINER_ID> ue4:Tartan after first run of ue to prevent long ue init each time from recompiling shader maps
 
@@ -151,6 +151,15 @@ RUN source /opt/ros/melodic/setup.bash \
 && sudo -E catkin build
 # data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
 
+
+## Source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash automatically
+RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
+
+## Mapping Dependencies
+RUN sudo apt update && sudo apt install python-tk python-numba -y --no-install-recommends
+RUN pip install msgpack-rpc-python pyquaternion
+
+
 # # Enable PulseAudio support
 # RUN sudo apt install pulseaudio-utils -y --no-install-recommends
 # COPY --chown=$USERNAME:$USERNAME pulseaudio-client.conf /etc/pulse/client.conf
@@ -191,12 +200,9 @@ RUN source /opt/ros/melodic/setup.bash \
 # WORKDIR src/filming_kf
 # RUN pip install --user .
 
-# # Copy Unreal Environments (Forest, Gascola ...)
-# # https://cmu.box.com/s/ewia8tusjc9iqxnc5iimr7wuug9gvs3h (Would you like to use car simulation? Choose no to use quadrotor simulation. Error at startup: VehicleSetting for vehicle name BP_FlyingPawn_2413 was requested but not found)
-# # https://cmu.box.com/s/lknouwj7w9fhfnxcj3taqe3su0ns28ww (Unable to read project status.)
-# # COPY --chown=$USERNAME environment /$FOLDER_NAME/environment
-## End of cinematography ##
-
+### Install Others
+## Text Editor
+# sudo apt install gedit
 
 ## HW Accelerate
 # run xhost +local:docker on your host machine if any issues opening UI
@@ -211,4 +217,4 @@ ENV QT_X11_NO_MITSHM=1
 
 
 ## Set working directory for container
-WORKDIR /$FOLDER_NAME/UnrealEngine
+WORKDIR /$FOLDER_NAME
