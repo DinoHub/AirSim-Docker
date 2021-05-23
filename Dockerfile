@@ -1,6 +1,8 @@
 # docker build -t ue4:Tartan .
 # xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4:Tartan
-# docker commit <CONTAINER_ID> ue4:latest after first run of ue to prevent long ue init each time from recompiling shader maps
+# $ ./Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
+# "Would you like to rebuild AirSim?" >> Yes
+# docker commit <CONTAINER_ID> ue4:Tartan after first run of ue to prevent long ue init each time from recompiling shader maps
 
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
