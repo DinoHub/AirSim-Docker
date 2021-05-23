@@ -1,8 +1,16 @@
-# docker build -t ue4:Tartan .
-# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" ue4:Tartan
+### Instructions for Docker
+## build image from this dockerfile. E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan
+# docker build -t <IMAGE_NAME>:<IMAGE_TAG> .
+
+## run a container from the built image.
+# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" <IMAGE_NAME>:<IMAGE_TAG>
 # $ ./UnrealEngine/Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
 # "Would you like to rebuild AirSim?" >> Yes
-# docker commit <CONTAINER_ID> ue4:Tartan after first run of ue to prevent long ue init each time from recompiling shader maps
+
+## save the container settings
+# docker container ls -a		(to get CONTAINER_NAME)
+# docker commit <CONTAINER_NAME> <IMAGE_NAME>:<IMAGE_TAG> after first run of ue to prevent long ue init each time from recompiling shader maps
+
 ## Open another bash
 # docker exec -it <CONTAINER_NAME> bash
 ## Open another bash with display
@@ -186,7 +194,7 @@ WORKDIR /$FOLDER_NAME/maps/OccMap
 
 ### Install Others
 ## Text Editor
-RUN sudo apt update && sudo apt install gedit
+RUN sudo apt update && sudo apt install gedit -y --no-install-recommends
 
 ## HW Accelerate
 # run xhost +local:docker on your host machine if any issues opening UI
