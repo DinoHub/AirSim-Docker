@@ -15,6 +15,7 @@
 1. nvidia-docker installed on host (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian). 
 1. \> 120GB in directory where docker images are built. This is typically in '/', recommend to shift to '/home' or other directory with larger storage (https://www.guguweb.com/2019/02/07/how-to-move-docker-data-directory-to-another-location-on-ubuntu/)
 1. git clone https://github.com/Amigoshan/tartanair into same directory as dockerfile. Rename as /tartanair/
+1. Ensure docker image directory has "defaults" options or NO "nosuid" option.
 
 ## Build Docker Image
 1. `cd /directory/containing/dockerfile/`
