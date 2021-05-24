@@ -2,11 +2,11 @@
 
 ## Set up Unreal Project 
 (https://microsoft.github.io/AirSim/unreal_custenv/)
-### In Windows Machine
-1. Create new project with custom environment of choice. Copy Unreal project folder to Linux machine
+1. ### In Windows Machine
+    - Create new project with custom environment of choice. Copy Unreal project folder to Linux machine
 
-### In Linux Machine
-1. From AirSim/Unreal/, copy Plugins/ into the Unreal project folder.
+1. ### In Linux Machine
+    - From AirSim/Unreal/, copy Plugins/ into the Unreal project folder.
 
 
 ## Docker Pre-Reqs
