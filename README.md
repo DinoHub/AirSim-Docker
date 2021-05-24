@@ -14,8 +14,25 @@
     - Optional for QOL: remove need for sudo for docker (https://docs.docker.com/engine/install/linux-postinstall/)
 1. nvidia-docker installed on host (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installing-on-ubuntu-and-debian). 
 1. \> 120GB in directory where docker images are built. This is typically in '/', recommend to shift to '/home' or other directory with larger storage (https://www.guguweb.com/2019/02/07/how-to-move-docker-data-directory-to-another-location-on-ubuntu/)
+1. *After Steps 2 & 3, `/etc/docker/daemon.json` should look similar to below. Key parameters are "data-root", "runtimes", and "default-runtime".
+    ```
+    {
+        "data-root": "/home/jonyktan/docker",
+        "runtimes": {
+            "nvidia": {
+                "path": "nvidia-container-runtime",
+                "runtimeArgs": []
+            }
+        },
+        "default-runtime": "nvidia"
+    }
+    ```
 1. git clone https://github.com/Amigoshan/tartanair into same directory as dockerfile. Rename as /tartanair/
-1. Ensure docker image directory has "defaults" options or NO "nosuid" option.
+1. Ensure docker image directory has "defaults" options or NO "nosuid" option. Check this using `nano /etc/fstab`.
+    - Edit using "Disks". Recommended to set "Mount Options" to "defaults". See image below, above "Mount Point".
+    ![](./images/mount_options.png)
+
+
 
 ## Build Docker Image
 1. `cd /directory/containing/dockerfile/`
@@ -41,6 +58,6 @@
 
 ## Launch Unreal Engine inside Docker Container
 1. Copy AirSim plugins to Unreal Project.
-    - `cp /workspace/AirSim/Unreal/Plugins/ /path/to/Unreal/Project/`
-1. `./path/to/UnrealEngine/Engine/Binaries/Linux/UE4Editor /path/to/Unreal/Project/<PROJECT_NAME>.uproject`
+    - `cp /workspace/AirSim/Unreal/Plugins/ /path/to/Unreal/Project/` (e.g. '/workspace/UnrealProj/')
+1. `/workspace/UnrealEngine/Engine/Binaries/Linux/UE4Editor /path/to/Unreal/Project/<PROJECT_NAME>.uproject`
 1. Unreal Engine will prompt to rebuild AirSim. Click "Yes". First compile will take awhile.
