@@ -99,14 +99,17 @@ RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
 RUN git clone -b 4.25 https://theairlab:airlab123@github.com/EpicGames/UnrealEngine.git
 
 # AirSim
-RUN git clone https://github.com/Microsoft/AirSim.git
+# test if v1.4 is better
+RUN git clone -b v1.4.0-linux https://github.com/Microsoft/AirSim.git
+# # latest AirSim
+# RUN git clone https://github.com/Microsoft/AirSim.git
 
 
 ## ROS Installation
 WORKDIR /home/$USERNAME
 # RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
-# RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
-RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
+RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
+# RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
 # dependencies from Wenshan Doc
 RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
 # # dependencies for building packages (TODO: necessary?)
@@ -195,6 +198,10 @@ WORKDIR /$FOLDER_NAME/maps/OccMap
 ### Install Others
 ## Text Editor
 RUN sudo apt update && sudo apt install gedit -y --no-install-recommends
+
+# Cleanup
+RUN sudo apt clean autoremove
+
 
 ## HW Accelerate
 # run xhost +local:docker on your host machine if any issues opening UI
