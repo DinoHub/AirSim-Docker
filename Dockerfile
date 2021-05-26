@@ -1,4 +1,5 @@
 ### Instructions for Docker
+## set your github user and password in this dockerfile. search for <update>
 ## build image from this dockerfile. E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan
 # docker build -t <IMAGE_NAME>:<IMAGE_TAG> .
 
@@ -13,25 +14,32 @@
 
 ## Open another bash
 # docker exec -it <CONTAINER_NAME> bash
+
 ## Open another bash with display
 # xhost +local:docker && docker exec -it -e "DISPLAY=${DISPLAY}" <CONTAINER_NAME> bash
+
 
 FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
 
 USER root
 
+# ==============================
 # Replace with local SG mirrors
+# ==============================
 RUN sed --in-place --regexp-extended "s/(\/\/)(archive\.ubuntu)/\1sg.\2/" /etc/apt/sources.list
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ Asia/Singapore
-RUN apt update
-RUN apt install -y --no-install-recommends sudo curl tzdata
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends sudo curl tzdata
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && sudo dpkg-reconfigure -f noninteractive tzdata
 
-## UI Support
+
+# ==============================
+# UI Support
+# ==============================
 # Enable Vulkan support
-RUN sudo apt install -y --no-install-recommends libvulkan1 && \
+RUN sudo apt-get install -y --no-install-recommends libvulkan1 && \
 	VULKAN_API_VERSION=`dpkg -s libvulkan1 | grep -oP 'Version: [0-9|\.]+' | grep -oP '[0-9|\.]+'` && \
 	mkdir -p /etc/vulkan/icd.d/ && \
 	echo \
@@ -44,7 +52,7 @@ RUN sudo apt install -y --no-install-recommends libvulkan1 && \
 	}" > /etc/vulkan/icd.d/nvidia_icd.json
 
 # Enable X11 support (including the libraries required by CEF) and xvfb so we can create a dummy display if needed
-RUN sudo apt install -y --no-install-recommends \
+RUN sudo apt-get install -y --no-install-recommends \
 	libasound2 \
 	libatk1.0-0 \
 	libcairo2 \
@@ -70,15 +78,15 @@ RUN sudo apt install -y --no-install-recommends \
 	xvfb
 
 
-## User Setup
+# ============================== 
+# User Setup
+# ==============================
 # Add a user with the same user_id as the user outside the container
 # Requires a docker build argument `USERID` >> docker build --build-arg USERID=youruserid
 ARG USERID=1000
 ARG GROUPID=1000
 # Use 'ue4' for username and group name
 ENV USERNAME=ue4
-# RUN groupadd --gid $GROUPID $USERNAME 
-# RUN useradd --uid $USERID --gid $GROUPID --create-home --shell /bin/bash $USERNAME \
 RUN echo "$USERNAME:$USERNAME" | chpasswd \
 && adduser $USERNAME sudo \
 && echo "$USERNAME ALL=NOPASSWD: ALL" >> /etc/sudoers.d/$USERNAME
@@ -86,126 +94,105 @@ WORKDIR /home/$USERNAME
 RUN sudo chown --recursive $USERNAME:$USERNAME /home/$USERNAME
 USER $USERNAME
 
-## Big Downloads
-# ROS Melodic 
-RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
 
-# Unreal Engine
+# ==============================
+# Unreal Engine 4.25
+# ==============================
+ARG GITHUB_USER=<update>
+ARG GITHUB_PWD=<update>
 ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
-
-RUN git clone -b 4.25 https://theairlab:airlab123@github.com/EpicGames/UnrealEngine.git
-
-# AirSim
-# test if v1.4 is better
-RUN git clone -b v1.4.0-linux https://github.com/Microsoft/AirSim.git
-# # latest AirSim
-# RUN git clone https://github.com/Microsoft/AirSim.git
-
-
-## ROS Installation
-WORKDIR /home/$USERNAME
-# RUN sudo apt update --fix-missing && sudo apt install ros-melodic-desktop-full  -y --no-install-recommends
-RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full  -y --no-install-recommends
-# RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
-# dependencies from Wenshan Doc
-RUN sudo apt install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
-# # dependencies for building packages (TODO: necessary?)
-RUN sudo apt install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-wstool python-catkin-tools -y --no-install-recommends
-# RUN sudo apt install python-rosdep python-rosinstall python-rosinstall-generator python-wstool build-essential -y --no-install recommends
-
-
-# ## AirSim Installation Dependencies (TODO: necessary?)
-# # # RUN sudo apt-get install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs pulseaudio -y --no-install-recommends
-# # RUN sudo apt install python3 python3-pip python3-dev sudo libglu1-mesa-dev xdg-user-dirs -y --no-install-recommends
-# # RUN sudo apt install build-essential cmake cppcheck gdb git vim wget tmux less htop python python-pip python-tk -y --no-install-recommends
-
-# Cleanup
-RUN sudo apt clean autoremove
-
-# # ## Python (TODO: necessary?)
-# # RUN pip3 install setuptools wheel --no-cache-dir
-# # RUN pip3 install 'ue4cli>=0.0.41' 'conan-ue4cli>=0.0.21' ue4-ci-helpers --no-cache-dir
-# # RUN pip3 install msgpack-rpc-python numpy airsim --no-cache-dir
-# # RUN pip install colored-traceback catkin_tools msgpack-rpc-python torch future --no-cache-dir
-
-RUN sudo chown -R $USERNAME /home/$USERNAME
-## Unreal Setup (https://bitbucket.org/castacks/cluster/wiki/airsim_ros)
-# ( https://microsoft.github.io/AirSim/build_linux/)
+RUN git clone -b 4.25 https://$GITHUB_USER:$GITHUB_PWD@github.com/EpicGames/UnrealEngine.git
 WORKDIR /$FOLDER_NAME/UnrealEngine
-# RUN sudo chown -R $USERNAME /$FOLDER_NAME
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
 USER $USERNAME
 RUN make
-WORKDIR /$FOLDER_NAME
 
-## AirSim Setup (https://microsoft.github.io/AirSim/build_linux/)
-WORKDIR AirSim
+
+# =======================================================================
+#  AirSim v1.4.0-linux (https://microsoft.github.io/AirSim/build_linux/)
+# =======================================================================
+WORKDIR /$FOLDER_NAME
+RUN git clone --depth 1 -b v1.4.0-linux https://github.com/Microsoft/AirSim.git
+WORKDIR /$FOLDER_NAME/AirSim
 RUN ./setup.sh
 RUN ./build.sh
 # use ./build.sh --debug to build in debug mode
+# TODO: Copy Plugins folder to host if possible
 
 
-## Mapping Code (https://github.com/Amigoshan/tartanair.git)
-ARG WORKSPACE=catkin_ws
+# ==========================
+# ROS Melodic
+# ==========================
+# TODO: Still have problem on this installation. It works after trying to add some more dependencies but the list is not firmed.
+RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+WORKDIR /home/$USERNAME
+# Pre-requisites for ros-melodic-desktop-full
+RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
+# Install ros-melodic-desktop-full
+RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
+# Additional Dependencies
+RUN sudo apt-get install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
+RUN sudo apt-get install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-setuptools python-wstool python-catkin-tools -y --no-install-recommends
+RUN sudo apt-get install ros-melodic-cmake-modules 
+
+
+# ==============================================================
+# TartanAir Codes (https://github.com/Amigoshan/tartanair.git)
+# ==============================================================
+# Clone Repo
+ARG GITHUB_USER=<update>
+ARG GITHUB_PWD=<update>
+ARG WORKSPACE=tartan_ws
 WORKDIR /$FOLDER_NAME/$WORKSPACE
 RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
-WORKDIR src
-COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
+RUN git clone https://$GITHUB_USER:$GITHUB_PWD@github.com/Amigoshan/tartanair.git
+RUN sudo mv /$FOLDER_NAME/$WORKSPACE/tartanair /$FOLDER_NAME/$WORKSPACE/src
 
-# (Git clone doesn't work somehow)
-# RUN git clone https://theairlab:airlab123@github.com/Amigoshan/tartanair.git
-# RUN mv tartainair src
-
+# Build Workspace
+# data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
 WORKDIR /$FOLDER_NAME/$WORKSPACE
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-RUN source /opt/ros/melodic/setup.bash \
-&& sudo -E catkin build
-# data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
-
-
-## Source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash automatically
+RUN source /opt/ros/melodic/setup.bash && sudo -E catkin build
 RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
 
-## Mapping Dependencies
-RUN sudo apt update && sudo apt install python-tk python-numba -y --no-install-recommends
-RUN pip install msgpack-rpc-python pyquaternion scipy
+# Mapping Dependencies
+RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
+RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy
+# TODO: Add packages for python3
 
-## Create directory to store maps
+# Copy settings_mapping.json to ~Document/AirSim/settings.json
+WORKDIR /home/$USERNAME/Documents/AirSim
+RUN sudo mv /$FOLDER_NAME/$WORKSPACE/src/sample_pipeline/settings_mapping.json /home/$USERNAME/Documents/AirSim/settings.json
+
+
+# ==========================
+# Cleanup
+# ==========================
+RUN sudo apt-get clean autoremove
+
+
+# ============================== 
+# Create directory to store maps
+# ============================== 
 WORKDIR /$FOLDER_NAME/maps/OccMap
 
 
-# # Enable PulseAudio support
-# RUN sudo apt install pulseaudio-utils -y --no-install-recommends
-# COPY --chown=$USERNAME:$USERNAME pulseaudio-client.conf /etc/pulse/client.conf
+# ============================== 
+# Install Others
+# ============================== 
+# Text Editor and Vim
+RUN sudo apt-get update && sudo apt-get install gedit vim -y --no-install-recommends
 
 
-### Setup Unreal Project
-## Copy Unreal Project with AirSim plugin from host into container
-## Refer to https://microsoft.github.io/AirSim/unreal_custenv/ for steps to setup AirSim Unreal Project using Windows machine (cannot be done in Linux for custom env)
-# Name Unreal Project as TartanTest/ on host
-# WORKDIR unrealproj
-# COPY ./TartanTest/ /$FOLDER_NAME/$WORKSPACE/unrealproj
-## Above not necessary. Use docker run arguments to mount Unreal Project from host into container.
-
-## Alternatively, see last FAQ of https://microsoft.github.io/AirSim/unreal_custenv/
-## Copy Unreal/Plugins/ from /$FOLDER_NAME/AirSim/ to /$FOLDER_NAME/$WORKSPACE/unrealproj
-## Then edit the .uproject file to enable AirSim
-
-### Install Others
-## Text Editor
-RUN sudo apt update && sudo apt install gedit -y --no-install-recommends
-
-# Cleanup
-RUN sudo apt clean autoremove
-
-
-## HW Accelerate
+# ============================== 
+# HW Accelerate
+# ============================== 
 # run xhost +local:docker on your host machine if any issues opening UI
-# test with cmd: roscore & rosrun rviz rviz
+# test with cmd: roscore & rviz
 # enable NVIDIA Container Toolkit (https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/user-guide.html#dockerfiles)
 ENV NVIDIA_VISIBLE_DEVICES \
     ${NVIDIA_VISIBLE_DEVICES:-all}
@@ -215,5 +202,18 @@ ENV SDL_HINT_CUDA_DEVICE=0
 ENV QT_X11_NO_MITSHM=1
 
 
-## Set working directory for container
+# ================================ 
+# List folder structure; for info
+# ================================ 
+WORKDIR /$FOLDER_NAME/$WORKSPACE
+RUN ls
+WORKDIR /$FOLDER_NAME/$WORKSPACE/src
+RUN ls
+WORKDIR /home/$USERNAME/Documents/AirSim
+RUN ls
+
+
+# =================================== 
+# Set working directory for container
+# =================================== 
 WORKDIR /$FOLDER_NAME
