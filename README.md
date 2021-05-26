@@ -61,3 +61,6 @@
     - `cp /workspace/AirSim/Unreal/Plugins/ /path/to/Unreal/Project/` (e.g. '/workspace/UnrealProj/')
 1. `/workspace/UnrealEngine/Engine/Binaries/Linux/UE4Editor /path/to/Unreal/Project/<PROJECT_NAME>.uproject`
 1. Unreal Engine will prompt to rebuild AirSim. Click "Yes". First compile will take awhile.
+
+## Others
+1. Remember to edit the blocks.sh script path for saving map.
