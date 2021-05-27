@@ -120,7 +120,6 @@ WORKDIR /$FOLDER_NAME/AirSim
 RUN ./setup.sh
 RUN ./build.sh
 # use ./build.sh --debug to build in debug mode
-# TODO: Copy Plugins folder to host if possible
 
 
 # ==========================
@@ -163,10 +162,6 @@ RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
 RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
 RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy
 # TODO: Add packages for python3
-
-# Copy settings_mapping.json to ~Document/AirSim/settings.json
-WORKDIR /home/$USERNAME/Documents/AirSim
-RUN sudo mv /$FOLDER_NAME/$WORKSPACE/src/sample_pipeline/settings_mapping.json /home/$USERNAME/Documents/AirSim/settings.json
 
 
 # ==========================
