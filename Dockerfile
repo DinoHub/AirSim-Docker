@@ -123,10 +123,13 @@ RUN make
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
 WORKDIR /home/$USERNAME
-# Pre-requisites for ros-melodic-desktop-full
-# RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
-# Install ros-melodic-desktop-full
+# Note: Option 1 tested to work but there are cases where it fails, prompting for pre-requisites to be installed, use Option 2 in this case.
+# Option 1: Install ros-melodic-desktop-full 
 RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
+# Option 2: Install pre-requisites for ros-melodic-desktop-full before install ros-melodic-full
+# RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
+# RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
+
 # Additional Dependencies
 RUN sudo apt-get install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
 RUN sudo apt-get install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-setuptools python-wstool python-catkin-tools -y --no-install-recommends
