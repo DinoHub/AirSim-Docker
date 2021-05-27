@@ -107,7 +107,6 @@ USER $USERNAME
 # ==============================
 # Unreal Engine 4.25
 # ==============================
-RUN echo $GITHUB_USER
 ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
@@ -122,7 +121,6 @@ RUN make
 # ==========================
 # ROS Melodic
 # ==========================
-# TODO: Still have problem on this installation. It works after trying to add some more dependencies but the list is not firmed.
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
 WORKDIR /home/$USERNAME
@@ -147,35 +145,22 @@ WORKDIR /$FOLDER_NAME/AirSim
 RUN ./setup.sh
 RUN ./build.sh
 # use ./build.sh --debug to build in debug mode
+# Create ~Documents/AirSim folder
+WORKDIR /home/$USERNAME/Documents/AirSim
 
 
 # =======================================================================
 # TartanAir Dependencies
 # =======================================================================
 RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
-RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy
-# TODO: Add packages for python3
+RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy networkx
+# TODO: Add packages for python3 support
 
 
 # ==========================
 # Cleanup
 # ==========================
 RUN sudo apt-get clean autoremove
-
-
-# ============================== 
-# Create directories for TartanAir
-# ============================== 
-WORKDIR /$FOLDER_NAME/maps/OccMap
-# Create directory to store graphs
-WORKDIR /$FOLDER_NAME/data/graph_dir
-# Create directory to store paths
-WORKDIR /$FOLDER_NAME/data/path_dir
-# Create directory to store data
-WORKDIR /$FOLDER_NAME/data/data_dir
-# Permissions for above directories
-RUN sudo chown -R $USERNAME /$FOLDER_NAME/data
-# TODO: Create directories for data verification
 
 
 # ============================== 
