@@ -180,6 +180,8 @@ RUN sudo chown -R $USERNAME /$FOLDER_NAME/data
 ### Install Others
 # Text Editors
 RUN sudo apt-get update && sudo apt-get install gedit vim -y --no-install-recommends
+# Image Viewer
+RUN sudo apt-get update && sudo apt-get install eog -y --no-install-recommends
 
 
 ### HW Accelerate
