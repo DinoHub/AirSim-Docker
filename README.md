@@ -36,8 +36,9 @@
 
 ## Build Docker Image
 1. `cd /directory/containing/dockerfile/`
-1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> .`
+1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .`
     - E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan will build a docker image ue4:Tartan
+    - Make sure Github handle have access rights to UnrealEngine repo.
     - Use `docker container ls -a` to view the built/incomplete image.
 
 ## Run Docker Container from built Image
@@ -61,6 +62,3 @@
     - `cp /workspace/AirSim/Unreal/Plugins/ /path/to/Unreal/Project/` (e.g. '/workspace/UnrealProj/')
 1. `/workspace/UnrealEngine/Engine/Binaries/Linux/UE4Editor /path/to/Unreal/Project/<PROJECT_NAME>.uproject`
 1. Unreal Engine will prompt to rebuild AirSim. Click "Yes". First compile will take awhile.
-
-## Others
-1. Remember to edit the blocks.sh script path for saving map.
