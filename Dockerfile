@@ -159,13 +159,13 @@ RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
 
 # Install Mapping Dependencies
 RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
-RUN pip install msgpack-rpc-python pyquaternion scipy
+RUN pip install msgpack-rpc-python pyquaternion scipy networkx
 
 ## Create directories to store output data
 # Create directory to store maps
 WORKDIR /$FOLDER_NAME/data/map_dir/OccMap
 # Create directory to store graphs
-WORKDIR /$FOLDER_NAME/data/graph_dir
+WORKDIR /$FOLDER_NAME/data/graph_dir/OccMap
 # Create directory to store paths
 WORKDIR /$FOLDER_NAME/data/path_dir
 # Create directory to store data
