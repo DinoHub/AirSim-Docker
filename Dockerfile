@@ -1,5 +1,4 @@
 ### Instructions for Docker
-## set your github user and password in this dockerfile. search for <update>
 ## build image from this dockerfile. E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan
 # docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .
 
