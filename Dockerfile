@@ -1,10 +1,10 @@
 ### Instructions for Docker
 ## set your github user and password in this dockerfile. search for <update>
 ## build image from this dockerfile. E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan
-# docker build -t <IMAGE_NAME>:<IMAGE_TAG> .
+# docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .
 
-## run a container from the built image.
-# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/UE_env:/workspace/UnrealProj" -e "DISPLAY=${DISPLAY}" --ipc="host" <IMAGE_NAME>:<IMAGE_TAG>
+## run a container from the built image. vol should include UE4_env and TartanAir Codes
+# xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/vol:/workspace/TartanAir" -e "DISPLAY=${DISPLAY}" --ipc="host" <IMAGE_NAME>:<IMAGE_TAG>
 # $ ./UnrealEngine/Engine/Binaries/Linux/UE4Editor /workspace/UnrealProj/TartanTest.uproject
 # "Would you like to rebuild AirSim?" >> Yes
 
@@ -23,6 +23,15 @@ FROM adamrehn/ue4-build-prerequisites:cudagl10.0
 SHELL ["/bin/bash", "-c"]
 
 USER root
+
+
+# ==============================
+# Configurable params
+# ==============================
+ARG GITHUB_USER
+ARG GITHUB_PWD
+RUN env
+
 
 # ==============================
 # Replace with local SG mirrors
@@ -98,8 +107,7 @@ USER $USERNAME
 # ==============================
 # Unreal Engine 4.25
 # ==============================
-ARG GITHUB_USER=<update>
-ARG GITHUB_PWD=<update>
+RUN echo $GITHUB_USER
 ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
@@ -109,6 +117,25 @@ RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
 USER $USERNAME
 RUN make
+
+
+# ==========================
+# ROS Melodic
+# ==========================
+# TODO: Still have problem on this installation. It works after trying to add some more dependencies but the list is not firmed.
+RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
+WORKDIR /home/$USERNAME
+# Pre-requisites for ros-melodic-desktop-full
+# RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
+# Install ros-melodic-desktop-full
+RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
+# Additional Dependencies
+RUN sudo apt-get install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
+RUN sudo apt-get install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-setuptools python-wstool python-catkin-tools -y --no-install-recommends
+RUN sudo apt-get install ros-melodic-cmake-modules 
+# Add to bashrc
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 
 
 # =======================================================================
@@ -122,43 +149,9 @@ RUN ./build.sh
 # use ./build.sh --debug to build in debug mode
 
 
-# ==========================
-# ROS Melodic
-# ==========================
-# TODO: Still have problem on this installation. It works after trying to add some more dependencies but the list is not firmed.
-RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
-WORKDIR /home/$USERNAME
-# Pre-requisites for ros-melodic-desktop-full
-RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
-# Install ros-melodic-desktop-full
-RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
-# Additional Dependencies
-RUN sudo apt-get install ros-melodic-octomap ros-melodic-octomap-mapping ros-melodic-octomap-msgs ros-melodic-octomap-ros ros-melodic-octomap-rviz-plugins ros-melodic-octomap-server ros-melodic-dynamic-edt-3d -y --no-install-recommends
-RUN sudo apt-get install ros-melodic-catkin ros-melodic-teleop-twist-keyboard python-pip python-setuptools python-wstool python-catkin-tools -y --no-install-recommends
-RUN sudo apt-get install ros-melodic-cmake-modules 
-
-
-# ==============================================================
-# TartanAir Codes (https://github.com/Amigoshan/tartanair.git)
-# ==============================================================
-# Clone Repo
-ARG GITHUB_USER=<update>
-ARG GITHUB_PWD=<update>
-ARG WORKSPACE=tartan_ws
-WORKDIR /$FOLDER_NAME/$WORKSPACE
-RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
-RUN git clone https://$GITHUB_USER:$GITHUB_PWD@github.com/Amigoshan/tartanair.git
-RUN sudo mv /$FOLDER_NAME/$WORKSPACE/tartanair /$FOLDER_NAME/$WORKSPACE/src
-
-# Build Workspace
-# data_type expo_base frontier_base octomap_mapping ompl planner_base roadmap_generator sample_pipeline
-WORKDIR /$FOLDER_NAME/$WORKSPACE
-RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-RUN source /opt/ros/melodic/setup.bash && sudo -E catkin build
-RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
-
-# Mapping Dependencies
+# =======================================================================
+# TartanAir Dependencies
+# =======================================================================
 RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
 RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy
 # TODO: Add packages for python3
@@ -171,9 +164,18 @@ RUN sudo apt-get clean autoremove
 
 
 # ============================== 
-# Create directory to store maps
+# Create directories for TartanAir
 # ============================== 
 WORKDIR /$FOLDER_NAME/maps/OccMap
+# Create directory to store graphs
+WORKDIR /$FOLDER_NAME/data/graph_dir
+# Create directory to store paths
+WORKDIR /$FOLDER_NAME/data/path_dir
+# Create directory to store data
+WORKDIR /$FOLDER_NAME/data/data_dir
+# Permissions for above directories
+RUN sudo chown -R $USERNAME /$FOLDER_NAME/data
+# TODO: Create directories for data verification
 
 
 # ============================== 
@@ -195,17 +197,6 @@ ENV NVIDIA_DRIVER_CAPABILITIES all
 # ENV SDL_VIDEODRIVER=offscreen
 ENV SDL_HINT_CUDA_DEVICE=0
 ENV QT_X11_NO_MITSHM=1
-
-
-# ================================ 
-# List folder structure; for info
-# ================================ 
-WORKDIR /$FOLDER_NAME/$WORKSPACE
-RUN ls
-WORKDIR /$FOLDER_NAME/$WORKSPACE/src
-RUN ls
-WORKDIR /home/$USERNAME/Documents/AirSim
-RUN ls
 
 
 # =================================== 
