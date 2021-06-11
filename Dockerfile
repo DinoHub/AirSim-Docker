@@ -90,7 +90,7 @@ RUN sudo apt-get install -y --no-install-recommends \
 # User Setup
 # ==============================
 # Add a user with the same user_id as the user outside the container
-# Requires a docker build argument `USERID` >> docker build --build-arg USERID=youruserid
+=======
 ARG USERID=1000
 ARG GROUPID=1000
 # Use 'ue4' for username and group name
@@ -103,6 +103,10 @@ RUN sudo chown --recursive $USERNAME:$USERNAME /home/$USERNAME
 USER $USERNAME
 
 
+# ============================== 
+# Installs
+# ==============================
+
 # ==============================
 # Unreal Engine 4.25
 # ==============================
@@ -110,6 +114,7 @@ ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
 RUN git clone -b 4.25 https://$GITHUB_USER:$GITHUB_PWD@github.com/EpicGames/UnrealEngine.git
+=======
 WORKDIR /$FOLDER_NAME/UnrealEngine
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
@@ -120,12 +125,13 @@ RUN make
 # ==========================
 # ROS Melodic
 # ==========================
+WORKDIR /home/$USERNAME 
 RUN sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN curl -sSL 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC1CF6E31E6BADE8868B172B4F42ED6FBAB17C654' | sudo apt-key add -
-WORKDIR /home/$USERNAME
 # Note: Option 1 tested to work but there are cases where it fails, prompting for pre-requisites to be installed, use Option 2 in this case.
 # Option 1: Install ros-melodic-desktop-full 
 RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
+
 # Option 2: Install pre-requisites for ros-melodic-desktop-full before install ros-melodic-full
 # RUN sudo apt-get update && sudo apt-get install ros-melodic-perception ros-melodic-simulators ros-melodic-urdf-sim-tutorial ros-melodic-perception-pcl ros-melodic-pcl-conversions ros-melodic-pcl-ros libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-pkgs -y --no-install-recommends
 # RUN sudo apt-get update && sudo apt-get install ros-melodic-desktop-full -y --no-install-recommends
@@ -137,11 +143,15 @@ RUN sudo apt-get install ros-melodic-cmake-modules
 # Add to bashrc
 RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 
+# Cleanup
+RUN sudo apt-get clean autoremove
+
 
 # =======================================================================
 #  AirSim v1.4.0-linux (https://microsoft.github.io/AirSim/build_linux/)
 # =======================================================================
 WORKDIR /$FOLDER_NAME
+# v1.4 is working. Stick to v1.4 first.
 RUN git clone --depth 1 -b v1.4.0-linux https://github.com/Microsoft/AirSim.git
 WORKDIR /$FOLDER_NAME/AirSim
 RUN ./setup.sh
@@ -150,26 +160,59 @@ RUN ./build.sh
 # Create ~Documents/AirSim folder
 WORKDIR /home/$USERNAME/Documents/AirSim
 
+=======
+WORKDIR /$FOLDER_NAME
 
-# =======================================================================
-# TartanAir Dependencies
-# =======================================================================
+
+# ============================== 
+# Setup TartanAir Data Pipeline
+# ==============================
+
+# ============================== 
+# Pull TartanAir Data Pipeline Code (https://github.com/Amigoshan/tartanair.git)
+# ==============================
+ARG WORKSPACE=catkin_ws
+WORKDIR /$FOLDER_NAME/$WORKSPACE
+RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
+WORKDIR src
+# Copy tartanair/ from host into docker image
+COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
+
+
+# ============================== 
+# Catkin build TartanAir ROS workspace
+# ==============================
+WORKDIR /$FOLDER_NAME/$WORKSPACE
+RUN source /opt/ros/melodic/setup.bash \
+&& sudo -E catkin build
+
+# Source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash automatically
+RUN echo "source /$FOLDER_NAME/$WORKSPACE/devel/setup.bash" >> ~/.bashrc
+
+
+
+# ============================== 
+# Install Additional Packages
+# ==============================
+
+# ============================== 
+# Dependencies For TartanAir Mapping
+# ==============================
 RUN sudo apt-get update && sudo apt-get install python-tk python-numba -y --no-install-recommends
 RUN pip install pip wheel msgpack-rpc-python pyquaternion scipy networkx
-# TODO: Add packages for python3 support
-
-
-# ==========================
-# Cleanup
-# ==========================
 RUN sudo apt-get clean autoremove
 
 
 # ============================== 
-# Install Others
+# Other Utilities
 # ============================== 
 # Text Editor and Vim
 RUN sudo apt-get update && sudo apt-get install gedit vim -y --no-install-recommends
+# Image Viewer
+RUN sudo apt-get update && sudo apt-get install eog -y --no-install-recommends
+# Clean Up
+RUN sudo apt-get clean autoremove
+
 
 
 # ============================== 
@@ -186,7 +229,26 @@ ENV SDL_HINT_CUDA_DEVICE=0
 ENV QT_X11_NO_MITSHM=1
 
 
+
 # =================================== 
-# Set working directory for container
+# Set Up Working Directories for Container
 # =================================== 
+## Create directories to store output data
+# Create directory to store maps
+WORKDIR /$FOLDER_NAME/data/map_dir/OccMap
+# Create directory to store graphs
+WORKDIR /$FOLDER_NAME/data/graph_dir/OccMap
+# Create directory to store paths
+WORKDIR /$FOLDER_NAME/data/path_dir
+# Create directory to store data
+WORKDIR /$FOLDER_NAME/data/data_dir
+
+## Create directories for data verification
+# TBD
+
+# Permissions for above directories
+RUN sudo chown -R $USERNAME /$FOLDER_NAME/data
+
+
+# Set working directory for container and END
 WORKDIR /$FOLDER_NAME
