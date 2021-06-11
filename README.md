@@ -36,8 +36,9 @@
 
 ## Build Docker Image
 1. `cd /directory/containing/dockerfile/`
-1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> .`
+1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .`
     - E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan will build a docker image ue4:Tartan
+    - Make sure Github handle have access rights to UnrealEngine repo.
     - Use `docker container ls -a` to view the built/incomplete image.
 
 ## Run Docker Container from built Image
