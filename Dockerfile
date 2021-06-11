@@ -90,7 +90,7 @@ RUN sudo apt-get install -y --no-install-recommends \
 # User Setup
 # ==============================
 # Add a user with the same user_id as the user outside the container
-=======
+# =======
 ARG USERID=1000
 ARG GROUPID=1000
 # Use 'ue4' for username and group name
@@ -114,7 +114,7 @@ ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
 RUN git clone -b 4.25 https://$GITHUB_USER:$GITHUB_PWD@github.com/EpicGames/UnrealEngine.git
-=======
+# =======
 WORKDIR /$FOLDER_NAME/UnrealEngine
 RUN ./Setup.sh
 RUN ./GenerateProjectFiles.sh
@@ -160,7 +160,7 @@ RUN ./build.sh
 # Create ~Documents/AirSim folder
 WORKDIR /home/$USERNAME/Documents/AirSim
 
-=======
+# =======
 WORKDIR /$FOLDER_NAME
 
 
@@ -174,7 +174,7 @@ WORKDIR /$FOLDER_NAME
 ARG WORKSPACE=catkin_ws
 WORKDIR /$FOLDER_NAME/$WORKSPACE
 RUN sudo chown -R $USERNAME /$FOLDER_NAME/$WORKSPACE
-WORKDIR src
+WORKDIR /$FOLDER_NAME/$WORKSPACE/src
 # Copy tartanair/ from host into docker image
 COPY ./tartanair/ /$FOLDER_NAME/$WORKSPACE/src
 
