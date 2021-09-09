@@ -30,9 +30,10 @@ This dockerfile is used to build a docker image running Ubuntu 18.04, with ROS M
 
 ## Build Docker Image
 1. `cd /directory/containing/dockerfile/`
-1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .`
+1. `docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_PAT=<PAT> .`
     - E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan will build a docker image "ue4:Tartan".
-    - `<user>` and `<password>` are your Github handle and password respectively. Make sure Github account has access rights to UnrealEngine repo. (See Section 1 - Required Setup at https://docs.unrealengine.com/4.26/en-US/SharingAndReleasing/Linux/BeginnerLinuxDeveloper/SettingUpAnUnrealWorkflow/)
+    - `<PAT>` is your Github personal access token. (See here for steps on creating a PAT and using it: https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+    - Make sure Github account has access rights to UnrealEngine repo. (See Section 1 - Required Setup at https://docs.unrealengine.com/4.26/en-US/SharingAndReleasing/Linux/BeginnerLinuxDeveloper/SettingUpAnUnrealWorkflow/)
     - Use `docker container ls -a` to view the built/incomplete image.  
 <br>
 
