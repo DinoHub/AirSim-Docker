@@ -1,6 +1,6 @@
 ### Instructions for Docker
 ## build image from this dockerfile. E.g. IMAGE_NAME = ue4, IMAGE_TAG = Tartan
-# docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_USER=<user> --build-arg GITHUB_PWD=<password> .
+# docker build -t <IMAGE_NAME>:<IMAGE_TAG> --build-arg GITHUB_PAT=<personal_access_token>  .
 
 ## run a container from the built image. vol should include UE4_env and TartanAir Codes
 # xhost +local:docker && docker run --rm -it -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" -v "/path/to/your/vol:/workspace/TartanAir" -e "DISPLAY=${DISPLAY}" --ipc="host" <IMAGE_NAME>:<IMAGE_TAG>
@@ -27,8 +27,7 @@ USER root
 # ==============================
 # Configurable params
 # ==============================
-ARG GITHUB_USER
-ARG GITHUB_PWD
+ARG GITHUB_PAT
 RUN env
 
 
@@ -113,7 +112,7 @@ USER $USERNAME
 ARG FOLDER_NAME=workspace
 WORKDIR /$FOLDER_NAME
 RUN sudo chown -R $USERNAME:$USERNAME /$FOLDER_NAME
-RUN git clone -b 4.25 https://$GITHUB_USER:$GITHUB_PWD@github.com/EpicGames/UnrealEngine.git
+RUN git clone -b 4.25 https://$GITHUB_PAT@github.com/EpicGames/UnrealEngine.git
 # =======
 WORKDIR /$FOLDER_NAME/UnrealEngine
 RUN ./Setup.sh
